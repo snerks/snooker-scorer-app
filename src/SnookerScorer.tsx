@@ -215,8 +215,8 @@ const SnookerScorer: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {(['player1', 'player2'] as const).map((p) => (
               <div key={p} style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 0 }}>
-                <div style={{ width: 120, fontWeight: 'bold', fontSize: '1.08em' }}>{playerNames[p]}</div>
-                <div style={{ width: 60, fontVariantNumeric: 'tabular-nums', fontSize: '1.08em' }}>{scores[p]}</div>
+                <div style={{ width: 120, fontWeight: 'bold', fontSize: '1.08em', color: '#333' }}>{playerNames[p]}</div>
+                <div style={{ width: 60, fontVariantNumeric: 'tabular-nums', fontSize: '1.08em', color: '#333' }}>{scores[p]}</div>
                 <div style={{ width: 60, color: currentPlayer === p ? 'green' : '#888', textAlign: 'left', fontWeight: currentPlayer === p ? 'bold' : 'normal' }}>
                   {currentPlayer === p ? '●' : ''}
                 </div>
