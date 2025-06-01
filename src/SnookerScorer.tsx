@@ -56,13 +56,21 @@ const SnookerScorer: React.FC = () => {
     if (ball === 'Red') {
       if (redsLeft === 0) return;
       newRedsLeft--;
+      // Do not remove any color from table when potting a red
     } else if (redsLeft > 0) {
-      // Color after red, respot
-      if (Object.prototype.hasOwnProperty.call(newColorsOnTable, ball)) {
+      // Color after red, respot: do NOT remove from table
+      // No action needed here
+    } else {
+      // Colors in order, remove from table
+      // But: after final red, the next color is a free choice and should NOT be removed
+      // Only remove if all reds are gone AND not immediately after the final red
+      const lastPottedRed =
+        history.length > 0 &&
+        history[history.length - 1].includes('potted Red') &&
+        (history.filter(h => h.includes('potted Red')).length === initialReds);
+      if (!lastPottedRed) {
         newColorsOnTable[ball as ColorName] = false;
       }
-      // Colors in order, remove from table
-      newColorsOnTable[ball as ColorName] = false;
     }
 
     newHistory.push(action);
@@ -73,7 +81,11 @@ const SnookerScorer: React.FC = () => {
     setBreakScore(b => b + value);
 
     // Check for frame end
-    if (newRedsLeft === 0 && Object.values(newColorsOnTable).every(v => !v)) {
+    // Frame is only over when all colors have been potted (i.e., all are false)
+    // and the last potted ball was the black
+    const allColorsGone = Object.values(newColorsOnTable).every(v => !v);
+    const lastPottedBlack = newHistory.length > 0 && newHistory[newHistory.length - 1].includes('potted Black');
+    if (newRedsLeft === 0 && allColorsGone && lastPottedBlack) {
       setFrameOver(true);
     }
   }
@@ -107,18 +119,35 @@ const SnookerScorer: React.FC = () => {
   // Determine which balls are valid to pot
   let validBalls: string[] = [];
   if (redsLeft > 0) {
-    // If a red is required (alternating red and color)
-    if (breakScore === 0 || nextColor === 'Red') {
+    // At the start of a break or after potting a color, only red is valid
+    if (
+      history.length === 0 ||
+      history[history.length - 1].includes('ended turn') ||
+      history[history.length - 1].includes('foul') ||
+      (history[history.length - 1].includes('potted') && !history[history.length - 1].includes('Red'))
+    ) {
       if (redsLeft > 0) validBalls = ['Red'];
-    } else {
-      // After a red, any color can be potted (and respotted)
-      validBalls = (Object.keys(colorsOnTable) as ColorName[]).filter(c => colorsOnTable[c]);
+    } else if (history[history.length - 1].includes('potted Red')) {
+      // After potting a red, any color is valid
+      validBalls = (['Yellow', 'Green', 'Brown', 'Blue', 'Pink', 'Black'] as ColorName[]).filter(c => colorsOnTable[c]);
     }
   } else {
     // All reds gone: must pot colors in order
-    const order: ColorName[] = ['Yellow', 'Green', 'Brown', 'Blue', 'Pink', 'Black'];
-    const next = order.find(c => colorsOnTable[c]);
-    if (next) validBalls = [next];
+    // Special case: after potting the final red, player must pot a color of their choice before starting the color sequence
+    // Check if the last potted ball was the final red
+    const lastPottedRed =
+      history.length > 0 &&
+      history[history.length - 1].includes('potted Red') &&
+      (history.filter(h => h.includes('potted Red')).length === initialReds);
+    if (lastPottedRed) {
+      // After final red, any color is valid
+      validBalls = (['Yellow', 'Green', 'Brown', 'Blue', 'Pink', 'Black'] as ColorName[]).filter(c => colorsOnTable[c]);
+    } else {
+      // Otherwise, must pot colors in order
+      const order: ColorName[] = ['Yellow', 'Green', 'Brown', 'Blue', 'Pink', 'Black'];
+      const next = order.find(c => colorsOnTable[c]);
+      if (next) validBalls = [next];
+    }
   }
 
   return (
@@ -138,9 +167,10 @@ const SnookerScorer: React.FC = () => {
       <div style={{ margin: '1em 0' }}>
         <strong>Pot ball:</strong><br />
         {BALLS.filter(b => validBalls.includes(b.name)).map(ball => (
-          <button key={ball.name} onClick={() => handlePot(ball.name)} style={{ margin: 4 }}>
-            <span className={`snooker-ball ${ball.name.toLowerCase()}`}></span>
-            <span className="snooker-ball-label">{ball.name} (+{ball.value})</span>
+          <button key={ball.name} onClick={() => handlePot(ball.name)} style={{ margin: 4, padding: 0, border: 'none', background: 'none' }}>
+            <span className={`snooker-ball ${ball.name.toLowerCase()}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.1em' }}>
+              {ball.value}
+            </span>
           </button>
         ))}
       </div>
