@@ -48,7 +48,8 @@ const SnookerScorer: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [playerNames, setPlayerNames] = useState<{ player1: string; player2: string }>({ player1: 'Player 1', player2: 'Player 2' });
 
-  const nextColor = getNextColor(redsLeft, colorsOnTable);
+  // const nextColor =
+  getNextColor(redsLeft, colorsOnTable);
 
   function handlePot(ball: string) {
     if (frameOver && !respottedBlack) return;
@@ -110,13 +111,13 @@ const SnookerScorer: React.FC = () => {
   }
 
   // Coin toss handler
-  function handleCoinToss() {
-    if (!respottedBlack) return;
-    const winner = Math.random() < 0.5 ? 'player1' : 'player2';
-    setCoinTossWinner(winner);
-    setCurrentPlayer(winner);
-    setHistory([...history, `Coin toss: ${winner === 'player1' ? playerNames.player1 : playerNames.player2} to play from hand on respotted black.`]);
-  }
+  // function handleCoinToss() {
+  //   if (!respottedBlack) return;
+  //   const winner = Math.random() < 0.5 ? 'player1' : 'player2';
+  //   setCoinTossWinner(winner);
+  //   setCurrentPlayer(winner);
+  //   setHistory([...history, `Coin toss: ${winner === 'player1' ? playerNames.player1 : playerNames.player2} to play from hand on respotted black.`]);
+  // }
 
   function handleFoul(points: number) {
     if (frameOver) return;
